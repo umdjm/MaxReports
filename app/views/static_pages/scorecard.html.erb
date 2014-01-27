@@ -231,10 +231,10 @@
                         .round(d3.time.month.round)
                         .renderHorizontalGridLines(true)
                         .compose([budgets, actuals])
-                        .brushOn(false)
+                        .brushOn(true)
                         .renderlet(function (chart) {
-                            chart.selectAll("g._1").attr("transform", "translate(" + 1 + ", 0)");
-                            chart.selectAll("g._0").attr("transform", "translate(" + -19 + ", 0)");
+                            chart.selectAll("g._1").attr("transform", "translate(" + 20 + ", 0)");
+                            chart.selectAll("g._0").attr("transform", "translate(" + 1 + ", 0)");
                         });
 
                 var monthFormat = d3.time.format("%b %Y");
