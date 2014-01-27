@@ -1,27 +1,53 @@
 
-<div id="Chart1"/>
+
+
+<div id="charts" class="row">
+  <div class="chart span12">
+    <h4>Max Budget To Actual</h4>
+  </div>
 </div>
-<div id="Chart2"/>
-</div>
-<div id="Chart3"/>
-</div>
-<div id="Chart4"/>
+<div id="charts" class="row">
+  <div id="BudgetToActualChart" class="chart span12">
+  </div>
 </div>
 
+
+<div id="charts" class="row">
+  <div class="chart span6">
+    <h4>Actuals By Client</h4>
+  </div>
+  <div class="chart span6">
+    <div ><h4>Actuals By Department</h4></div>
+  </div>
+</div>
+
+<div id="charts" class="row">
+  <div id="ClientChart" class="chart span6"></div>
+  <div id="DepartmentChart" class="chart span6"></div>
+</div>
+
+
+
+<div id="charts" class="row">
+  <div class="chart span12 col-centered">
+    <h4>Raw Data</h4>
+  </div>
+</div>
 <div id="datatable">
-    <table id="dc-data-table">
-      <thead>
-      <tr>
-        <th data-dynatable-column="Engagement" style="width:32%;">Engagement</th>
-        <th data-dynatable-column="Role"  style="width:20%;">Role</th>
-        <th data-dynatable-column="Name"  style="width:20%;">Name</th>
-        <th data-dynatable-column="Day"  style="width:7%;" data-dynatable-sorts="parsedDay">Day</th>
-        <th data-dynatable-column="Rate" style="width:7%;">Rate</th>
-        <th data-dynatable-column="Hours" style="width:7%;">Hours</th>
-        <th data-dynatable-column="Amount" style="width:7%;">Amount</th>
-      </tr>
-      </thead>
-    </table>
+  <table id="dc-data-table">
+    <thead>
+    <tr>
+      <th data-dynatable-column="Client" style="width:32%;">Client</th>
+      <th data-dynatable-column="Type" style="width:32%;">Type</th>
+      <th data-dynatable-column="Role"  style="width:20%;">Role</th>
+      <th data-dynatable-column="Name"  style="width:20%;">Name</th>
+      <th data-dynatable-column="Day"  style="width:7%;" data-dynatable-sorts="parsedDay">Day</th>
+      <th data-dynatable-column="Rate" style="width:7%;">Rate</th>
+      <th data-dynatable-column="Hours" style="width:7%;">Hours</th>
+      <th data-dynatable-column="DisplayAmount" style="width:7%;">Amount</th>
+    </tr>
+    </thead>
+  </table>
 </div>
 
 <script type="text/javascript">
@@ -29,9 +55,9 @@
     var scoreCard = {
         initChart: function()
         {
-            var compositeChart = dc.compositeChart("#Chart1");
-            var clientChart = dc.rowChart("#Chart3");
-            var deptChart = dc.rowChart("#Chart4");
+            var compositeChart = dc.compositeChart("#BudgetToActualChart");
+            var clientChart = dc.rowChart("#ClientChart");
+            var deptChart = dc.rowChart("#DepartmentChart");
             var clients = [
                 {search: "ACG", display: "ACG"},
                 {search: "Fiat", display: "Fiat"},
@@ -44,7 +70,7 @@
                 {search: "M-Drive", display: "Mazda"},
                 {search: "Infrastructure", display: "Internal"} ,
                 {search: "Business Development", display: "Internal"}
-                    ];
+            ];
             var departments = [
                 {search: "Project Manager", display: "PPM"},
                 {search: "Project Mgr", display: "PPM"},
@@ -64,17 +90,42 @@
                 {search: "Program Admin", display: "AMS"}
             ];
 
-            d3.tsv("actuals", function(error, data) {
+            var q = queue()
+                    .defer(d3.tsv, "budgets")
+                    .defer(d3.tsv, "actuals");
+
+            q.await(function(error, budgetData, actualData) {
                 var inputFormat = d3.time.format("%-m/%d/%Y");
-                data.forEach(function(x) {
+                budgetData.forEach(function(x) {
+                    //Engagement,Project,Role,Name,Date,Rate,Hours,Amount
+                    x.Engagement = "";
+                    x.Type = "Budget";
+                    x.Project = "";
+                    x.Role = "";
+                    x.Name = "";
+                    x.Day = x.Date;
+                    x.parsedDay = inputFormat.parse(x.Date);
+                    x.Date = d3.time.month.floor(x.parsedDay);
+                    x.Rate = 0;
+                    x.Hours = 0;
+                    x.Budget = +(x.Amount.replace('$','').replace(',','').replace(' ', ''));
+                    x.Amount = 0;
+                    x.DisplayAmount = x.Budget;
+                    x.Client = x.Client;
+                });
+
+                actualData.forEach(function(x) {
                     //Engagement,Project,Role,Name,Date,Rate,Hours,Amount
                     x.Day = x.Date;
+                    x.Type = "Actual";
                     x.parsedDay = inputFormat.parse(x.Date);
                     x.Date = d3.time.month.floor(inputFormat.parse(x.Date));
                     x.Rate = +(x.Rate.replace('$',''));
                     x.Hours = +x.Hours;
                     x.Amount = +(x.Amount.replace('$','').replace(',','').replace(' ', ''));
                     x.Client = "Other";
+                    x.Budget = 0;
+                    x.DisplayAmount = x.Amount;
 
                     for(var i = 0; i < clients.length; i++)
                     {
@@ -94,27 +145,27 @@
                         }
                     }
                 });
-                var timeExtent = d3.extent(data, function(d) { return d.parsedDay});
+                var timeExtent = d3.extent(actualData, function(d) { return d.parsedDay});
                 timeExtent[0] = d3.time.day.offset(d3.time.month.floor(timeExtent[0]), -15);
                 timeExtent[1] = d3.time.day.offset(d3.time.month.ceil(timeExtent[1]), -15);
 
-                var ndx                 = crossfilter(data),
-                        groupByAmount   = function(d) {return d.Amount;},
-                        tableDimension  = ndx.dimension(function(d) {return d.Date;}),
+                var ndx                 = crossfilter(budgetData);
+                ndx.add(actualData);
+
+                var     groupByAmount   = function(d) {return d.Amount;},
+                        tableDimension  = ndx.dimension(function(d) {return d.Budget;}),
                         monthDimension  = ndx.dimension(function(d) {return d.Date;}),
-                        amountGroup     = monthDimension.group().reduceSum(groupByAmount),
                         clientDimension = ndx.dimension(function(d) {return d.Client;}),
                         clientGroup     = clientDimension.group().reduceSum(groupByAmount),
                         deptDimension   = ndx.dimension(function(d) {return d.Department;}),
                         deptGroup       = deptDimension.group().reduceSum(groupByAmount);
 
                 var laborAmounts = [];
-
                 laborAmounts.push(monthDimension.group().reduce(
                         function(p, d){return p;},
                         function(p, d){return p;},
                         function(){
-                            return { Actual: 1110,  Budget: 0, Client: ""};
+                            return { Actual: 0,  Budget: 0, Client: ""};
                         }
                 ));
                 clientDimension.group().all().forEach(function(client){
@@ -122,7 +173,7 @@
                             function(p, d){
                                 if(d.Client == client.key){
                                     p.Actual += d.Amount;
-                                    p.Budget += d.Amount*.9;
+                                    p.Budget += d.Budget;
                                     p.Client = d.Client;
                                 }
                                 return p;
@@ -130,7 +181,7 @@
                             function(p, d){
                                 if(d.Client == client.key){
                                     p.Actual -= d.Amount;
-                                    p.Budget -= d.Amount*.9;
+                                    p.Budget -= d.Budget;
                                     p.Client = d.Client;
                                 }
                                 return p;
@@ -151,41 +202,41 @@
                 var group = laborAmounts.pop();
 
                 var actuals = dc.barChart(compositeChart)
-                        .gap(55)
+                        .gap(65)
                         .group(group)
                         .valueAccessor(function (d) {
                             return d.value.Actual;
                         });
                 var budgets = dc.barChart(compositeChart)
-                        .gap(55)
+                        .gap(65)
                         .group(group)
                         .valueAccessor(function (d) {
                             return d.value.Budget;
                         });
 
                 laborAmounts.forEach(function(sum){
-                    actuals.stack(sum);
                     budgets.stack(sum);
+                    actuals.stack(sum);
                 });
 
                 compositeChart
-                    .width(1000)
-                    .height(300)
-                    .transitionDuration(100)
-                    .margins({top: 20, right: 10, bottom: 40, left: 50})
-                    .dimension(monthDimension)
-                    .group(group)
-                    .elasticY(true)
-                    .x(d3.time.scale().domain(timeExtent))
-                    .xUnits(d3.time.months)
-                    .round(d3.time.month.round)
-                    .renderHorizontalGridLines(true)
-                    .compose([actuals, budgets])
-                    .brushOn(false)
-                    .renderlet(function (chart) {
-                        chart.selectAll("g._1").attr("transform", "translate(" + 1 + ", 0)");
-                        chart.selectAll("g._0").attr("transform", "translate(" + -29 + ", 0)");
-                    });
+                        .width(1000)
+                        .height(300)
+                        .transitionDuration(100)
+                        .margins({top: 20, right: 10, bottom: 40, left: 50})
+                        .dimension(monthDimension)
+                        .group(group)
+                        .elasticY(true)
+                        .x(d3.time.scale().domain(timeExtent))
+                        .xUnits(d3.time.months)
+                        .round(d3.time.month.round)
+                        .renderHorizontalGridLines(true)
+                        .compose([budgets, actuals])
+                        .brushOn(false)
+                        .renderlet(function (chart) {
+                            chart.selectAll("g._1").attr("transform", "translate(" + 1 + ", 0)");
+                            chart.selectAll("g._0").attr("transform", "translate(" + -19 + ", 0)");
+                        });
 
                 var monthFormat = d3.time.format("%b %Y");
                 compositeChart.xAxis().tickFormat(function(v) {return monthFormat(v);});
