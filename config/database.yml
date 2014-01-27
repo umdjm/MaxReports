@@ -1,0 +1,16 @@
+
+development:
+  adapter: postgresql
+  encoding: unicode
+  database: MAXScorecard_development
+  pool: 5
+  username: rails
+  password: jordan
+
+  production:
+    adapter: postgresql
+    encoding: unicode
+    database: MAXScorecard_production
+    pool: 5
+    username:
+    password:
