@@ -64,7 +64,7 @@
                 {search: "Program Admin", display: "AMS"}
             ];
 
-            d3.tsv("actuals.tab", function(error, data) {
+            d3.tsv("data", function(error, data) {
                 var inputFormat = d3.time.format("%-m/%d/%Y");
                 data.forEach(function(x) {
                     //Engagement,Project,Role,Name,Date,Rate,Hours,Amount
