@@ -28,6 +28,13 @@
 
 
 
+<div class="row">
+  <div class="span5"></div>
+  <div class="chart span7">
+    <button type="button" class="btn btn-info reset" onclick="javascript:dc.filterAll();dc.redrawAll();">Clear Filters</button>
+  </div>
+</div>
+
 <div id="charts" class="row">
   <div class="chart span12 col-centered">
     <h4>Raw Data</h4>
@@ -99,7 +106,7 @@
                 budgetData.forEach(function(x) {
                     //Engagement,Project,Role,Name,Date,Rate,Hours,Amount
                     x.Engagement = "";
-                    x.Type = "Budget";
+                    x.Type = "Invoice";
                     x.Project = "";
                     x.Role = "";
                     x.Name = "";
@@ -117,7 +124,7 @@
                 actualData.forEach(function(x) {
                     //Engagement,Project,Role,Name,Date,Rate,Hours,Amount
                     x.Day = x.Date;
-                    x.Type = "Actual";
+                    x.Type = "Changepoint Record";
                     x.parsedDay = inputFormat.parse(x.Date);
                     x.Date = d3.time.month.floor(inputFormat.parse(x.Date));
                     x.Rate = +(x.Rate.replace('$',''));
