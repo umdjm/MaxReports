@@ -27,6 +27,32 @@
 </div>
 
 
+<div id="charts" class="row">
+  <div class="chart span6">
+    <h4>Actuals By Engagement</h4>
+  </div>
+  <div class="chart span6">
+    <div ><h4>Actuals By Project</h4></div>
+  </div>
+</div>
+
+<div id="charts" class="row">
+  <div id="EngagementChart" class="chart span6"></div>
+  <div id="ProjectChart" class="chart span6"></div>
+</div>
+
+
+
+<div id="charts" class="row">
+  <div class="chart span6">
+    <h4>Actuals By User</h4>
+  </div>
+</div>
+
+<div id="charts" class="row">
+  <div id="UserChart" class="chart span6"></div>
+</div>
+
 
 <div class="row">
   <div class="chart span12 col-centered">
@@ -44,8 +70,9 @@
     <thead>
     <tr>
       <th data-dynatable-column="Client" style="width:10%;">Client</th>
-      <th data-dynatable-column="Type" style="width:10%;">Type</th>
-      <th data-dynatable-column="Role"  style="width:20%;">Role</th>
+      <th data-dynatable-column="Type" style="width:5%;">Type</th>
+      <th data-dynatable-column="Engagement" style="width:10%;">Engagement</th>
+      <th data-dynatable-column="Role"  style="width:10%;">Role</th>
       <th data-dynatable-column="Name"  style="width:20%;">Name</th>
       <th data-dynatable-column="Day"  style="width:10%;" data-dynatable-sorts="parsedDay">Day</th>
       <th data-dynatable-column="Rate" style="width:10%;">Rate</th>
@@ -64,6 +91,9 @@
             var compositeChart = dc.compositeChart("#BudgetToActualChart");
             var clientChart = dc.rowChart("#ClientChart");
             var deptChart = dc.rowChart("#DepartmentChart");
+            var engChart = dc.rowChart("#EngagementChart");
+            var projChart = dc.rowChart("#ProjectChart");
+            var userChart = dc.rowChart("#UserChart");
             var clients = [
                 {search: "ACG", display: "ACG"},
                 {search: "Fiat", display: "Fiat"},
@@ -105,6 +135,8 @@
                 budgetData.forEach(function(x) {
                     //Engagement,Project,Role,Name,Date,Rate,Hours,Amount
                     x.Engagement = "";
+                    x.Project = "";
+                    x.Full_Engagement = x.Engagement;
                     x.Type = "Invoice";
                     x.Project = "";
                     x.Role = "";
@@ -150,6 +182,7 @@
                             break;
                         }
                     }
+                    x.Full_Engagement = x.Engagement;
                 });
                 var timeExtent = d3.extent(actualData, function(d) { return d.parsedDay});
                 timeExtent[0] = d3.time.day.offset(d3.time.month.floor(timeExtent[0]), -15);
@@ -163,6 +196,12 @@
                         monthDimension  = ndx.dimension(function(d) {return d.Date;}),
                         clientDimension = ndx.dimension(function(d) {return d.Client;}),
                         clientGroup     = clientDimension.group().reduceSum(groupByAmount),
+                        projectDimension = ndx.dimension(function(d) {return d.Project;}),
+                        projectGroup     = projectDimension.group().reduceSum(groupByAmount),
+                        userDimension = ndx.dimension(function(d) {return d.Name;}),
+                        userGroup     = userDimension.group().reduceSum(groupByAmount),
+                        engDimension    = ndx.dimension(function(d) {return d.Engagement;}),
+                        engGroup        = engDimension.group().reduceSum(groupByAmount),
                         deptDimension   = ndx.dimension(function(d) {return d.Department;}),
                         deptGroup       = deptDimension.group().reduceSum(groupByAmount);
 
@@ -238,6 +277,12 @@
                         .renderHorizontalGridLines(true)
                         .compose([budgets, actuals])
                         .brushOn(true)
+                        .title(function (d) {
+                            return [
+                                "Engagement: " + d.value.engagement,
+                                "Amount:" + d.value.amount
+                            ].join("\n");
+                        })
                         .renderlet(function (chart) {
                             chart.selectAll("g._1").attr("transform", "translate(" + 20 + ", 0)");
                             chart.selectAll("g._0").attr("transform", "translate(" + 1 + ", 0)");
@@ -249,9 +294,9 @@
 
 
                 var clientList = ["Ford",   "ACG",     "Fiat",    "DPC",     "ADT",     "Arby",    "TR",      "Mazda",   "Internal"];
-                var colors =     ["#6b6ecf", "#ffbb78", "#9467bd", "#9edae5", "#e7cb94", "#d6616b", "#e377c2", "#a1d99b", "#bdbdbd"];
+                var colors =     ["#6b6ecf", "#ffbb78", "#9467bd", "#9edae5", "#e7cb94", "#d6616b", "#e377c2", "#a1d99b", "#636363"];
                 var colorTheChart = function(c) {
-                    d3.selectAll('rect.bar').each(function (d,i){
+                    d3.selectAll('#BudgetToActualChart rect.bar').each(function (d,i){
                         var colorIndex = _.indexOf(clientList, d.data.value.Client);
                         if(_.indexOf(this.classList, "deselected") > -1)
                             this.setAttribute('style', 'fill: #c7c7c7;' );
@@ -283,6 +328,58 @@
                         .dimension(deptDimension)
                         .group(deptGroup)
                         .elasticX(true)
+                        .xAxis().ticks(4).tickFormat(function(v) {return accounting.formatMoney(v, "$", 0);});
+
+                engChart
+                        .width(500)
+                        .height(300)
+                        .colors(d3.scale.ordinal().domain([""]).range(["#7f7f7f"]))
+                        .dimension(engDimension)
+                        .ordering(function(d){ return -d.value })
+                        .group(engGroup)
+                        .cap(10)
+                        .elasticX(true)
+                        .title(function (d) {
+                            return [
+                                "Engagement: " + d.key,
+                                "Actual: " + accounting.formatMoney(d.value, "$", 0)
+                            ].join("\n");
+                        })
+                        .xAxis().ticks(4).tickFormat(function(v) {return accounting.formatMoney(v, "$", 0);});
+
+
+                projChart
+                        .width(500)
+                        .height(300)
+                        .colors(d3.scale.ordinal().domain([""]).range(["#7f7f7f"]))
+                        .dimension(projectDimension)
+                        .ordering(function(d){ return -d.value })
+                        .group(projectGroup)
+                        .cap(10)
+                        .elasticX(true)
+                        .title(function (d) {
+                            return [
+                                "Project: " + d.key,
+                                "Actual: " + accounting.formatMoney(d.value, "$", 0)
+                            ].join("\n");
+                        })
+                        .xAxis().ticks(4).tickFormat(function(v) {return accounting.formatMoney(v, "$", 0);});
+
+                userChart
+                        .width(500)
+                        .height(300)
+                        .cap(10)
+                        .ordering(function(d){ return -d.value })
+                        .colors(d3.scale.ordinal().domain([""]).range(["#7f7f7f"]))
+                        .dimension(userDimension)
+                        .group(userGroup)
+                        .elasticX(true)
+                        .title(function (d) {
+                            return [
+                                "Name: " + d.key,
+                                "Actual: " + accounting.formatMoney(d.value, "$", 0)
+                            ].join("\n");
+                        })
                         .xAxis().ticks(4).tickFormat(function(v) {return accounting.formatMoney(v, "$", 0);});
 
                 var dynatable = $('#dc-data-table').dynatable({
