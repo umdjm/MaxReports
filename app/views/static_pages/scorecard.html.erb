@@ -9,8 +9,8 @@
 <div id="charts" class="row">
   <div id="BudgetToActualChart" class="chart span12">
   </div>
-</div>
 
+</div>
 
 <div id="charts" class="row">
   <div class="chart span6">
@@ -166,12 +166,22 @@
                     x.Budget = 0;
                     x.DisplayAmount = x.Amount;
 
-                    for(var i = 0; i < clients.length; i++)
+                    if(x.Project === "18939 - Upgrade MAX Thumbnail Generation"
+                            || x.Project === "19708 - 0018742 2014 MAX Infrastructure and Security"
+                            || x.Project === "18939 - 0017388 MAX Password Encryption"
+                            || x.Project === "18939 - 15383 - MAX Security Updates")
                     {
-                        if(x.Engagement.indexOf(clients[i].search) > -1)
+                        x.Client = "Operating Committee";
+                    }
+                    else
+                    {
+                        for(var i = 0; i < clients.length; i++)
                         {
-                            x.Client = clients[i].display;
-                            break;
+                            if(x.Engagement.indexOf(clients[i].search) > -1)
+                            {
+                                x.Client = clients[i].display;
+                                break;
+                            }
                         }
                     }
                     x.Department = "Other";
@@ -294,8 +304,8 @@
                 compositeChart.yAxis().ticks(4);
 
 
-                var clientList = ["Ford",   "ACG",     "Fiat",    "DPC",     "ADT",     "Arby",    "TR",      "Mazda",   "Internal"];
-                var colors =     ["#6b6ecf", "#ffbb78", "#9467bd", "#9edae5", "#e7cb94", "#d6616b", "#e377c2", "#a1d99b", "#636363"];
+                var clientList = ["Ford",   "ACG",     "Fiat",    "DPC",     "ADT",     "Arby",    "TR",      "Mazda",   "Internal", "Operating Committee"];
+                var colors =     ["#6b6ecf", "#ffbb78", "#9467bd", "#9edae5", "#e7cb94", "#d6616b", "#e377c2", "#a1d99b", "#636363", "#8c6d31"];
                 var colorTheChart = function(c) {
                     d3.selectAll('#BudgetToActualChart rect.bar').each(function (d,i){
                         var colorIndex = _.indexOf(clientList, d.data.value.Client);
