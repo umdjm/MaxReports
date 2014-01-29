@@ -2,6 +2,22 @@
 
 
 <div id="charts" class="row">
+  <div class="chart span6">
+    <h4>Budget:</h4>
+  </div>
+  <div class="chart span6">
+    <h4>Actual:</h4>
+  </div>
+</div>
+<div class="row">
+  <div id="BudgetNumber" class="chart span6">
+  </div>
+  <div id="ActualNumber" class="chart span6">
+  </div>
+
+</div>
+
+<div id="charts" class="row">
   <div class="chart span12">
     <h4>Max Budget To Actual</h4>
   </div>
@@ -95,6 +111,8 @@
             var engChart = dc.rowChart("#EngagementChart");
             var projChart = dc.rowChart("#ProjectChart");
             var userChart = dc.rowChart("#UserChart");
+            var totalBudget = dc.numberDisplay("#BudgetNumber");
+            var totalActual = dc.numberDisplay("#ActualNumber");
             var clients = [
                 {search: "ACG", display: "ACG"},
                 {search: "Fiat", display: "Fiat"},
@@ -141,7 +159,6 @@
                     x.Type = "Invoice";
                     x.Project = "";
                     x.Role = "";
-                    x.Name = "";
                     x.Day = x.Date;
                     x.parsedDay = inputFormat.parse(x.Date);
                     x.Date = d3.time.month.floor(x.parsedDay);
@@ -203,6 +220,7 @@
                 ndx.add(actualData);
 
                 var     groupByAmount   = function(d) {return d.Amount;},
+                        groupByBudget   = function(d) {return d.Budget;},
                         tableDimension  = ndx.dimension(function(d) {return d.Budget;}),
                         monthDimension  = ndx.dimension(function(d) {return d.Date;}),
                         clientDimension = ndx.dimension(function(d) {return d.Client;}),
@@ -392,6 +410,16 @@
                             ].join("\n");
                         })
                         .xAxis().ticks(4).tickFormat(function(v) {return accounting.formatMoney(v, "$", 0);});
+
+                var budgetTotalGroup = ndx.groupAll().reduceSum(groupByBudget);
+                totalBudget.formatNumber(function(v) {return accounting.formatMoney(v, "$", 0);})
+                        .group(budgetTotalGroup)
+                        .valueAccessor(function(v) {return v;});
+
+                var actualTotalGroup = ndx.groupAll().reduceSum(groupByAmount);
+                totalActual.formatNumber(function(v) {return accounting.formatMoney(v, "$", 0);})
+                        .group(actualTotalGroup)
+                        .valueAccessor(function(v) {return v;});
 
                 var dynatable = $('#dc-data-table').dynatable({
 
