@@ -2,17 +2,22 @@
 
 
 <div id="charts" class="row">
-  <div class="chart span6">
+  <div class="chart span4">
     <h4>Budget:</h4>
   </div>
-  <div class="chart span6">
+  <div class="chart span4">
     <h4>Actual:</h4>
+  </div>
+  <div class="chart span4">
+    <h4>Profit:</h4>
   </div>
 </div>
 <div class="row">
-  <div id="BudgetNumber" class="chart span6">
+  <div id="BudgetNumber" class="chart span4">
   </div>
-  <div id="ActualNumber" class="chart span6">
+  <div id="ActualNumber" class="chart span4">
+  </div>
+  <div id="ProfitNumber" class="chart span4">
   </div>
 
 </div>
@@ -113,6 +118,7 @@
             var userChart = dc.rowChart("#UserChart");
             var totalBudget = dc.numberDisplay("#BudgetNumber");
             var totalActual = dc.numberDisplay("#ActualNumber");
+            var totalProfit = dc.numberDisplay("#ProfitNumber");
             var clients = [
                 {search: "ACG", display: "ACG"},
                 {search: "Fiat", display: "Fiat"},
@@ -411,15 +417,34 @@
                         })
                         .xAxis().ticks(4).tickFormat(function(v) {return accounting.formatMoney(v, "$", 0);});
 
-                var budgetTotalGroup = ndx.groupAll().reduceSum(groupByBudget);
+                var totalGroup = ndx.groupAll().reduce(
+                        function(p, d){
+                            p.Actual += d.Amount;
+                            p.Budget += d.Budget;
+                            p.Profit = p.Budget - p.Actual;
+                            return p;
+                        },
+                        function(p, d){
+                            p.Actual -= d.Amount;
+                            p.Budget -= d.Budget;
+                            p.Profit = p.Budget - p.Actual;
+                            return p;
+                        },
+                        function(){
+                            return { Actual: 0,  Budget: 0, Profit: 0};
+                        }
+                );
                 totalBudget.formatNumber(function(v) {return accounting.formatMoney(v, "$", 0);})
-                        .group(budgetTotalGroup)
-                        .valueAccessor(function(v) {return v;});
+                        .group(totalGroup)
+                        .valueAccessor(function(v) {return v.Budget;});
 
-                var actualTotalGroup = ndx.groupAll().reduceSum(groupByAmount);
                 totalActual.formatNumber(function(v) {return accounting.formatMoney(v, "$", 0);})
-                        .group(actualTotalGroup)
-                        .valueAccessor(function(v) {return v;});
+                        .group(totalGroup)
+                        .valueAccessor(function(v) {return v.Actual;});
+
+                totalProfit.formatNumber(function(v) {return accounting.formatMoney(v, "$", 0);})
+                        .group(totalGroup)
+                        .valueAccessor(function(v) {return v.Profit;});
 
                 var dynatable = $('#dc-data-table').dynatable({
 
