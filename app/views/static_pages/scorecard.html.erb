@@ -162,7 +162,8 @@
                     x.Engagement = "";
                     x.Full_Engagement = x.Engagement;
                     x.Type = "Invoice";
-                    x.Project = x.Project;
+                    if(x.Project === undefined)
+                        x.Project = "";
                     x.Role = "";
                     x.Day = x.Date;
                     x.parsedDay = inputFormat.parse(x.Date);
