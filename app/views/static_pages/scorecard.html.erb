@@ -160,10 +160,9 @@
                 budgetData.forEach(function(x) {
                     //Engagement,Project,Role,Name,Date,Rate,Hours,Amount
                     x.Engagement = "";
-                    x.Project = "";
                     x.Full_Engagement = x.Engagement;
                     x.Type = "Invoice";
-                    x.Project = "";
+                    x.Project = x.Project;
                     x.Role = "";
                     x.Day = x.Date;
                     x.parsedDay = inputFormat.parse(x.Date);

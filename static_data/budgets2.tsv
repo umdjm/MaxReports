@@ -1,4 +1,4 @@
-Client	Amount	Date	Name
+Client	Amount	Date	Name	Project
 Fiat	3750	1/30/2014	
 Fiat	3750	2/28/2013	9433
 Fiat	3750	3/31/2013	9821
@@ -81,6 +81,14 @@ Arby	5000	9/30/2013	12540
 Arby	5000	10/30/2013	12908
 Arby	5000	11/30/2013	13278
 Arby	5000	12/28/2013	13744
-Arby	5000	1/30/2014	
-Operating Committee	11980	9/30/2013
-Operating Committee	17080	10/30/2013
+Arby	5000	1/30/2014
+Operating Committee	12302	1/30/2014	Security Updates	18939 - 0017388 MAX Password Encryption
+Operating Committee	1565	11/30/2013	Security Updates	18939 - 0017388 MAX Password Encryption
+Operating Committee	529	10/30/2013	Security Updates	18939 - 0017388 MAX Password Encryption
+Operating Committee	1536	9/30/2013	Security Updates	18939 - 0017388 MAX Password Encryption
+Operating Committee	140	8/30/2013	Security Updates	18939 - 0017388 MAX Password Encryption
+Operating Committee	140	7/30/2013	Security Updates	18939 - 0017388 MAX Password Encryption
+Operating Committee	196	5/30/2013	Security Updates	18939 - 0017388 MAX Password Encryption
+Operating Committee	672	3/30/2013	Security Updates	18939 - 0017388 MAX Password Encryption
+Operating Committee	10815	3/30/2013	Thumbnail Generation	18939 - Upgrade MAX Thumbnail Generation
+Operating Committee	1165	2/28/2013	Thumbnail Generation	18939 - Upgrade MAX Thumbnail Generation
