@@ -5,7 +5,7 @@ class StaticPagesController < ApplicationController
   def scorecard2
   end
   def actuals
-    @filename ="#{Rails.root}/static_data/actuals2.tab"
+    @filename ="#{Rails.root}/static_data/actuals.tab"
     send_file @filename, :type=>'text/html; charset=utf-8'
   end
 
