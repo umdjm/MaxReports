@@ -220,7 +220,7 @@
                 });
                 var timeExtent = d3.extent(actualData, function(d) { return d.parsedDay});
                 timeExtent[0] = d3.time.day.offset(d3.time.month.floor(timeExtent[0]), -15);
-                timeExtent[1] = d3.time.day.offset(d3.time.month.ceil(timeExtent[1]), -15);
+                timeExtent[1] = d3.time.day.offset(d3.time.month.ceil(timeExtent[1]), -1);
 
                 var ndx                 = crossfilter(budgetData);
                 ndx.add(actualData);
